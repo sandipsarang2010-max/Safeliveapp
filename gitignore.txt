@@ -1,0 +1,11 @@
+# Secret Keys
+config.json
+.env
+
+# Generated/Platform Files
+.dart_tool/
+.build/
+build/
+.flutter-plugins-dependencies
+firebase_options.dart
+android/app/google-services.json
