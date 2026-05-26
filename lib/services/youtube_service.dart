@@ -6,33 +6,37 @@ import 'package:googleapis_auth/googleapis_auth.dart' as auth;
 
 class YouTubeService {
   Future<void> fetchLiveChat(GoogleSignInAccount? user) async {
-    if (user == null) return;
-
-    // 1. Define the scopes you need
-    const List<String> scopes = [YouTubeApi.youtubeReadonlyScope];
-
-    // 2. Obtain the authorization client for the specific scopes
-    final authorization = await user.authorizationClient.authorizationForScopes(scopes);
-    
-    if (authorization == null) {
-      debugPrint("Authorization failed");
+    if (user == null) {
+      debugPrint("Error: No user signed in.");
       return;
     }
 
-    // 3. Create the authenticated client
-    final auth.AuthClient client = authorization.authClient(scopes: scopes);
+    // 1. Define the specific scopes required for the YouTube API
+    const List<String> scopes = [YouTubeApi.youtubeReadonlyScope];
+
+    // 2. Obtain the authorization client for the specific user and scopes
+    final authClient = await user.authClient(scopes: scopes);
+    
+    if (authClient == null) {
+      debugPrint("Error: Failed to obtain authenticated client.");
+      return;
+    }
 
     try {
-      // 4. Initialize API and fetch data
-      final youtubeApi = YouTubeApi(client);
-      final response = await youtubeApi.channels.list(['snippet'], mine: true);
+      // 3. Initialize the YouTube API using the authenticated client
+      final youtubeApi = YouTubeApi(authClient);
+      
+      final response = await youtubeApi.channels.list(
+        ['snippet'], 
+        mine: true
+      );
       
       debugPrint("Connected to: ${response.items?.first.snippet?.title}");
     } catch (e) {
-      debugPrint("Error: $e");
+      debugPrint("YouTube API Error: $e");
     } finally {
-      // Always close the client when done to release resources
-      client.close();
+      // Always close the client when done to release network resources
+      authClient.close();
     }
   }
 }
